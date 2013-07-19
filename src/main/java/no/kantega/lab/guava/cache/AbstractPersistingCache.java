@@ -49,6 +49,7 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
             V value = null;
             try {
                 value = findPersisted(key);
+                if(value != null) deletePersistedIfExistent(key);
             } catch (Exception e) {
                 LOGGER.warn(String.format("Could not load persisted value to key %s", key), e);
             }
@@ -99,6 +100,10 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
     protected abstract boolean isPersist(K key);
 
     protected abstract void deletePersistedIfExistent(K key);
+
+    protected abstract void deleteAllPersisted();
+
+    protected abstract int sizeOfPersisted();
 
     @Override
     @SuppressWarnings("unchecked")
@@ -172,11 +177,12 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
     @Override
     public void invalidateAll() {
         underlyingCache.invalidateAll();
+        deleteAllPersisted();
     }
 
     @Override
     public long size() {
-        return underlyingCache.size();
+        return underlyingCache.size() + sizeOfPersisted();
     }
 
     @Override

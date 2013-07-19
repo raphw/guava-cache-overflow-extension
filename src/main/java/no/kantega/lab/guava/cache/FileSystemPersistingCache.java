@@ -121,4 +121,32 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
                     file.getAbsolutePath(), key));
         }
     }
+
+    @Override
+    protected void deleteAllPersisted() {
+        for (File file : persistenceRootDirectory.listFiles()) {
+            file.delete();
+        }
+    }
+
+    @Override
+    protected int sizeOfPersisted() {
+        return countFilesInFolders(persistenceRootDirectory);
+    }
+
+    private int countFilesInFolders(File directory) {
+        int size = 0;
+        for (File file : directory.listFiles()) {
+            if (file.isDirectory()) {
+                size += countFilesInFolders(file);
+            } else if (!file.getName().startsWith(".")) {
+                size++;
+            }
+        }
+        return size;
+    }
+
+    public File getPersistenceRootDirectory() {
+        return persistenceRootDirectory;
+    }
 }
