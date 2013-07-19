@@ -1,1 +1,2 @@
-This file was created by IntelliJ IDEA 12.1.4 for binding GitHub repository
+A Guava cache extension that allows caches to persist cache entries when they cannot longer be stored in memory.
+An implementation that overflows to the file system is provided.
