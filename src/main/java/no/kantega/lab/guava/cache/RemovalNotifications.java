@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-public class RemovalNotifications {
+class RemovalNotifications {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemovalNotifications.class);
 
