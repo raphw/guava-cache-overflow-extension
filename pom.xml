@@ -15,8 +15,8 @@
         <url>http://www.kantega.no</url>
     </organization>
 
-    <name>Limber web framework</name>
-    <description>A web framework based on DOM manipulation.</description>
+    <name>Guava cache overflow extension</name>
+    <description>An extension to Guava caches that allows cache entries to overflow to disk.</description>
     <url>http://www.kantega.no</url>
 
     <properties>

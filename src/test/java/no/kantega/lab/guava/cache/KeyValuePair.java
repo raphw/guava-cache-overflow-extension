@@ -3,20 +3,23 @@ package no.kantega.lab.guava.cache;
 import java.util.LinkedList;
 import java.util.List;
 
-class KeyValuePair {
+public class KeyValuePair {
+
+    private static final String KEY_PREFIX = "key";
+    private static final String VALUE_PREFIX = "value";
 
     private final String key, value;
 
-    KeyValuePair(String key, String value) {
+    public KeyValuePair(String key, String value) {
         this.key = key;
         this.value = value;
     }
 
-    String getKey() {
+    public String getKey() {
         return key;
     }
 
-    String getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -47,15 +50,23 @@ class KeyValuePair {
                 '}';
     }
 
-    static String makeKey(int i) {
-        return "key" + i;
+    public static String makeKey(int i) {
+        return KEY_PREFIX + i;
     }
 
-    static String makeValue(int i) {
-        return "value" + i;
+    public static String makeValue(int i) {
+        return VALUE_PREFIX + i;
     }
 
-    static List<KeyValuePair> makeTestElements(int size) {
+    public static int fromKey(String value) {
+        return Integer.valueOf(value.substring(KEY_PREFIX.length(), value.length()));
+    }
+
+    public static int fromValue(String value) {
+        return Integer.valueOf(value.substring(VALUE_PREFIX.length(), value.length()));
+    }
+
+    public static List<KeyValuePair> makeTestElements(int size) {
         List<KeyValuePair> testElements = new LinkedList<KeyValuePair>();
         for (int i = 0; i < size; i++) {
             testElements.add(new KeyValuePair(makeKey(i), makeValue(i)));

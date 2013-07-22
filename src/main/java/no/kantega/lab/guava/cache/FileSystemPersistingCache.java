@@ -1,6 +1,7 @@
 package no.kantega.lab.guava.cache;
 
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
 import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +22,24 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
     }
 
     protected FileSystemPersistingCache(CacheBuilder<Object, Object> cacheBuilder, File persistenceDirectory) {
-        super(cacheBuilder);
+        this(cacheBuilder, persistenceDirectory, null);
+    }
+
+    protected FileSystemPersistingCache(CacheBuilder<Object, Object> cacheBuilder, RemovalListener<K, V> removalListener) {
+        this(cacheBuilder, Files.createTempDir(), removalListener);
+    }
+
+    protected FileSystemPersistingCache(CacheBuilder<Object, Object> cacheBuilder, File persistenceDirectory, RemovalListener<K, V> removalListener) {
+        super(cacheBuilder, removalListener);
         this.persistenceRootDirectory = validateDirectory(persistenceDirectory);
         LOGGER.info("Persisting to {}", persistenceDirectory.getAbsolutePath());
-
     }
 
     private File validateDirectory(File directory) {
         directory.mkdirs();
         if (!directory.exists() || !directory.isDirectory() || !directory.canRead() || !directory.canWrite()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(String.format("Directory %s cannot be used as a persistence directory",
+                    directory.getAbsolutePath()));
         }
         return directory;
     }
@@ -116,10 +125,7 @@ public class FileSystemPersistingCache<K, V> extends AbstractPersistingCache<K, 
     @Override
     protected void deletePersistedIfExistent(K key) {
         File file = pathToFileFor(key);
-        if (!file.delete()) {
-            throw new RuntimeException(String.format("Could not delete persisted file %s to key %s",
-                    file.getAbsolutePath(), key));
-        }
+        file.delete();
     }
 
     @Override

@@ -1,25 +1,33 @@
 package no.kantega.lab.guava.cache;
 
-import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.Cache;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import static org.testng.Assert.*;
 
 public class FileSystemPersistingCacheTest {
 
-    private FileSystemPersistingCache<String, String> fileSystemPersistingCache;
+    private Cache<String, String> fileSystemPersistingCache;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        fileSystemPersistingCache = new FileSystemPersistingCache<String, String>(
-                CacheBuilder.newBuilder().maximumSize(1L));
+        fileSystemPersistingCache = FileSystemCacheBuilder.newBuilder()
+                .maximumSize(1L)
+                .build();
     }
 
-    @Test
-    public void testFileWrite() throws Exception {
+    @AfterMethod
+    public void tearDown() throws Exception {
+        fileSystemPersistingCache.invalidateAll();
+    }
+
+        @Test
+    public void testCachePersistence() throws Exception {
 
         final int testSize = 100;
         List<KeyValuePair> keyValuePairs = KeyValuePair.makeTestElements(testSize);
@@ -50,5 +58,34 @@ public class FileSystemPersistingCacheTest {
 
         fileSystemPersistingCache.invalidateAll();
         assertEquals(fileSystemPersistingCache.size(), 0);
+    }
+
+    @Test
+    public void testAddByCallable() throws Exception {
+
+        final String callableReturnValue = "individual";
+        final Callable<String> callable = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return callableReturnValue;
+            }
+        };
+
+        String value0 = fileSystemPersistingCache.get(KeyValuePair.makeKey(0), callable);
+        assertNotNull(value0);
+        assertEquals(value0, callableReturnValue);
+
+        fileSystemPersistingCache.put(KeyValuePair.makeKey(1), KeyValuePair.makeValue(1));
+        String value1 = fileSystemPersistingCache.getIfPresent(KeyValuePair.makeKey(1));
+        assertNotNull(value1);
+        assertEquals(value1, KeyValuePair.makeValue(1));
+
+        value1 = fileSystemPersistingCache.get(KeyValuePair.makeKey(1), callable);
+        assertNotNull(value1);
+        assertEquals(value1, KeyValuePair.makeValue(1));
+
+        value0 = fileSystemPersistingCache.getIfPresent(KeyValuePair.makeKey(0));
+        assertNotNull(value0);
+        assertEquals(value0, callableReturnValue);
     }
 }

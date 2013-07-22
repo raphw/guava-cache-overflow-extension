@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -20,13 +19,21 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPersistingCache.class);
 
     private final LoadingCache<K, V> underlyingCache;
+    private final RemovalListener<K, V> removalListener;
 
     protected AbstractPersistingCache(CacheBuilder<Object, Object> cacheBuilder) {
+        this(cacheBuilder, null);
+    }
+
+    protected AbstractPersistingCache(CacheBuilder<Object, Object> cacheBuilder, RemovalListener<K, V> removalListener) {
         this.underlyingCache = makeCache(cacheBuilder);
+        this.removalListener = removalListener;
     }
 
     private LoadingCache<K, V> makeCache(CacheBuilder<Object, Object> cacheBuilder) {
-        return cacheBuilder.removalListener(new PersistingRemovalListener()).build(new PersistedStateCacheLoader());
+        return cacheBuilder
+                .removalListener(new PersistingRemovalListener())
+                .build(new PersistedStateCacheLoader());
     }
 
     private class PersistingRemovalListener implements RemovalListener<K, V> {
@@ -39,6 +46,8 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
                     LOGGER.warn(String.format("Could not persist value %s to key %s",
                             notification.getKey(), notification.getValue()), e);
                 }
+            } else if (removalListener != null) {
+                removalListener.onRemoval(notification);
             }
         }
     }
@@ -76,13 +85,19 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
 
         @Override
         public V call() throws Exception {
-            V value = load(key);
+            V value;
+            try {
+                value = load(key);
+            } catch (NotPersistedException e) {
+                value = null;
+            }
             if (value != null) return value;
             return valueLoader.call();
         }
     }
 
     protected boolean isPersistenceRelevant(RemovalCause removalCause) {
+        // Note: RemovalCause#wasEvicted is package private
         return removalCause != RemovalCause.EXPLICIT
                 && removalCause != RemovalCause.REPLACED;
     }
@@ -136,12 +151,12 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public ImmutableMap<K, V> getAllPresent(Iterable<?> keys) {
-        Map<K, V> allPresent = new HashMap<K, V>();
+        ImmutableMap.Builder<K, V> allPresent = ImmutableMap.builder();
         for (Object key : keys) {
             V value = getIfPresent(key);
             if (value != null) allPresent.put((K) key, value);
         }
-        return ImmutableMap.copyOf(allPresent);
+        return allPresent.build();
     }
 
     @Override
@@ -172,9 +187,19 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
     private void invalidatePersisted(Object key) {
         try {
             K castKey = (K) key;
-            deletePersistedIfExistent(castKey);
+            if (removalListener == null) {
+                deletePersistedIfExistent(castKey);
+            } else {
+                V value = findPersisted(castKey);
+                if (value != null) {
+                    removalListener.onRemoval(RemovalNotifications.make(castKey, value));
+                    deletePersistedIfExistent(castKey);
+                }
+            }
         } catch (ClassCastException e) {
             LOGGER.info(String.format("Could not cast key %s to desired type", key), e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
