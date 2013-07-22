@@ -4,11 +4,9 @@ import com.google.common.cache.CacheBuilder;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.LinkedList;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.*;
 
 public class FileSystemPersistingCacheTest {
 
@@ -24,55 +22,33 @@ public class FileSystemPersistingCacheTest {
     public void testFileWrite() throws Exception {
 
         final int testSize = 100;
-        List<KeyValuePair> keyValuePairs = makeTestElements(testSize);
+        List<KeyValuePair> keyValuePairs = KeyValuePair.makeTestElements(testSize);
 
         for (KeyValuePair keyValuePair : keyValuePairs) {
             fileSystemPersistingCache.put(keyValuePair.getKey(), keyValuePair.getValue());
         }
 
+        assertEquals(fileSystemPersistingCache.size(), testSize);
+
         for (KeyValuePair keyValuePair : keyValuePairs) {
             String valueFromCache = fileSystemPersistingCache.getIfPresent(keyValuePair.getKey());
             assertNotNull(valueFromCache);
             assertEquals(valueFromCache, keyValuePair.getValue());
+            assertEquals(fileSystemPersistingCache.size(), testSize);
         }
 
-        assertEquals(fileSystemPersistingCache.size(), testSize);
+        final int manualDeleteSize = 10, factor = 3;
+        assertTrue(manualDeleteSize * factor < testSize);
+
+        for (int i = 0; i < manualDeleteSize; i++) {
+            int index = i * factor;
+            fileSystemPersistingCache.invalidate(KeyValuePair.makeKey(index));
+            String value = fileSystemPersistingCache.getIfPresent(KeyValuePair.makeKey(index));
+            assertNull(value);
+            assertEquals(fileSystemPersistingCache.size(), testSize - i - 1);
+        }
 
         fileSystemPersistingCache.invalidateAll();
         assertEquals(fileSystemPersistingCache.size(), 0);
-    }
-
-    private List<KeyValuePair> makeTestElements(int size) {
-        List<KeyValuePair> testElements = new LinkedList<KeyValuePair>();
-        for (int i = 0; i < size; i++) {
-            testElements.add(new KeyValuePair(makeKey(i), makeValue(i)));
-        }
-        return testElements;
-    }
-
-    private static final class KeyValuePair {
-
-        private final String key, value;
-
-        private KeyValuePair(String key, String value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        private String getKey() {
-            return key;
-        }
-
-        private String getValue() {
-            return value;
-        }
-    }
-
-    private String makeKey(int i) {
-        return "key" + i;
-    }
-
-    private String makeValue(int i) {
-        return "value" + i;
     }
 }

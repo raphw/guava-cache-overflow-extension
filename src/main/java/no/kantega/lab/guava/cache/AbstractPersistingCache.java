@@ -49,7 +49,10 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
             V value = null;
             try {
                 value = findPersisted(key);
-                if(value != null) deletePersistedIfExistent(key);
+                if (value != null) {
+                    deletePersistedIfExistent(key);
+                    underlyingCache.put(key, value);
+                }
             } catch (Exception e) {
                 LOGGER.warn(String.format("Could not load persisted value to key %s", key), e);
             }
@@ -80,10 +83,11 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
     }
 
     protected boolean isPersistenceRelevant(RemovalCause removalCause) {
-        return removalCause != RemovalCause.COLLECTED;
+        return removalCause != RemovalCause.EXPLICIT
+                && removalCause != RemovalCause.REPLACED;
     }
 
-    protected Cache<K, V> getUnderlyingCache() {
+    protected LoadingCache<K, V> getUnderlyingCache() {
         return underlyingCache;
     }
 
@@ -114,11 +118,11 @@ public abstract class AbstractPersistingCache<K, V> implements Cache<K, V> {
         } catch (ClassCastException e) {
             LOGGER.info(String.format("Could not cast key %s to desired type", key), e);
         } catch (ExecutionException e) {
-            if (e.getCause().getClass() == NotPersistedException.class) {
-                LOGGER.info(String.format("Key %s is not persisted", key), e);
-            } else {
-                LOGGER.warn(String.format("Persisted value to key %s could not be retrieved", key), e);
-                throw new RuntimeException("Error while loading persisted value", e);
+            LOGGER.warn(String.format("Persisted value to key %s could not be retrieved", key), e);
+            throw new RuntimeException("Error while loading persisted value", e);
+        } catch (RuntimeException e) {
+            if (!(e.getCause() instanceof NotPersistedException)) {
+                throw e;
             }
         }
         return null;
