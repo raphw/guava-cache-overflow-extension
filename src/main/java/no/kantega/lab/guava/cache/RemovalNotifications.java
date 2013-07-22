@@ -29,6 +29,7 @@ class RemovalNotifications {
     private final Constructor<RemovalNotification> constructor;
 
     private RemovalNotifications() {
+        // Note: RemovalNotification constructor is package private
         try {
             constructor = RemovalNotification.class.getDeclaredConstructor(Object.class, Object.class, RemovalCause.class);
             constructor.setAccessible(true);
