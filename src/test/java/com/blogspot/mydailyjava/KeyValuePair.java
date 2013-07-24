@@ -1,4 +1,4 @@
-package no.kantega.lab.guava.cache;
+package com.blogspot.mydailyjava;
 
 import java.util.LinkedList;
 import java.util.List;

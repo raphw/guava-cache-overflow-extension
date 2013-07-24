@@ -1,4 +1,4 @@
-package no.kantega.lab.guava.cache;
+package com.blogspot.mydailyjava;
 
 import com.google.common.cache.Cache;
 import org.testng.annotations.AfterMethod;

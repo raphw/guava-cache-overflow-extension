@@ -1,4 +1,4 @@
-package no.kantega.lab.guava.cache;
+package com.blogspot.mydailyjava;
 
 class NotPersistedException extends RuntimeException {
     /* empty */

@@ -1,4 +1,4 @@
-package no.kantega.lab.guava.cache;
+package com.blogspot.mydailyjava;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
