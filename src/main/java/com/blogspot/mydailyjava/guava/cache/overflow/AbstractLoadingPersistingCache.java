@@ -1,44 +1,33 @@
-package com.blogspot.mydailyjava;
+package com.blogspot.mydailyjava.guava.cache.overflow;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 
-import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-public class FileSystemLoadingPersistingCache<K, V> extends FileSystemPersistingCache<K, V> implements LoadingCache<K, V> {
+public abstract class AbstractLoadingPersistingCache<K, V> extends AbstractPersistingCache<K, V> implements LoadingCache<K, V> {
 
-    private final CacheLoader<? super K, V> cacheLoader;
+    private final CacheLoader<K, V> cacheLoader;
 
-    protected FileSystemLoadingPersistingCache(CacheBuilder<Object, Object> cacheBuilder, CacheLoader<? super K, V> cacheLoader) {
-        this(cacheBuilder, cacheLoader, Files.createTempDir());
+    protected AbstractLoadingPersistingCache(CacheBuilder<Object, Object> cacheBuilder, CacheLoader<K, V> cacheLoader) {
+        this(cacheBuilder, cacheLoader, null);
     }
 
-    protected FileSystemLoadingPersistingCache(CacheBuilder<Object, Object> cacheBuilder, CacheLoader<? super K, V> cacheLoader, File persistenceDirectory) {
-        this(cacheBuilder, cacheLoader, persistenceDirectory, null);
-    }
-
-    protected FileSystemLoadingPersistingCache(CacheBuilder<Object, Object> cacheBuilder, CacheLoader<? super K, V> cacheLoader, RemovalListener<K, V> removalListener) {
-        this(cacheBuilder, cacheLoader, Files.createTempDir(), removalListener);
-    }
-
-    protected FileSystemLoadingPersistingCache(CacheBuilder<Object, Object> cacheBuilder, CacheLoader<? super K, V> cacheLoader,
-                                               File persistenceDirectory,RemovalListener<K, V> removalListener) {
-        super(cacheBuilder, persistenceDirectory, removalListener);
+    protected AbstractLoadingPersistingCache(CacheBuilder<Object, Object> cacheBuilder, CacheLoader<K, V> cacheLoader, RemovalListener<K, V> removalListener) {
+        super(cacheBuilder, removalListener);
         this.cacheLoader = cacheLoader;
     }
 
     private class ValueLoaderFromCacheLoader implements Callable<V> {
 
         private final K key;
-        private final CacheLoader<? super K, V> cacheLoader;
+        private final CacheLoader<K, V> cacheLoader;
 
-        private ValueLoaderFromCacheLoader(CacheLoader<? super K, V> cacheLoader, K key) {
+        private ValueLoaderFromCacheLoader(CacheLoader<K, V> cacheLoader, K key) {
             this.key = key;
             this.cacheLoader = cacheLoader;
         }
