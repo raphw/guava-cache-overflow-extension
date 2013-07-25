@@ -68,4 +68,39 @@
         </dependency>
     </dependencies>
 
+    <!-- OSS parent for deployment to Maven Central -->
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <issueManagement>
+        <system>github.com</system>
+        <url>https://github.com/raphw/guava-cache-overflow-extension/issues</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:raphw/guava-cache-overflow-extension.git</connection>
+        <developerConnection>scm:git:git@github.com:raphw/guava-cache-overflow-extension.git</developerConnection>
+        <url>git@github.com:raphw/guava-cache-overflow-extension.git</url>
+    </scm>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <inherited>true</inherited>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                        <encoding>utf-8</encoding>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
 </project>
