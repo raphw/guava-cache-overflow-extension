@@ -4,7 +4,7 @@
 
     <groupId>com.blogspot.mydailyjava</groupId>
     <artifactId>guava-cache-overflow-extension</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
 
     <inceptionYear>2013</inceptionYear>
 
