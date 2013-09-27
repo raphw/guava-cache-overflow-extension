@@ -11,7 +11,7 @@ Cache<String, String> stringCache =
     .build();
 ```
 
-Note: This cache implementation has slightly different semantics than the `Cache` / `LoadingCache` interface contracts specify:
+*Note*: This cache implementation has slightly different semantics than the `Cache` / `LoadingCache` interface contracts specify:
 * Any limits set for this cache do only concern the cache's memory size. Cache entries exceeding this limit will overflow to disk.
 * When calling the non-argument `invalidateAll()` method, the RemovalListener is only informed about the expiration of entries that are still stored in memory.
 * When the cache is not longer in use, its `invalidateAll()` method should be called if the cache's overflow folder is not cleared by the operating system.
