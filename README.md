@@ -18,3 +18,5 @@ Cache<String, String> stringCache =
 * There is a minimal risk of concurrency issues since cache entries are still accessible when the `RemovalListener` which is responsible for serializing the cache entry writes the entry to disk. This problem does not matter for immutable cache objects, but mutable state might get lost when cache entries are retreived while they are serialized. 
 
 Licensed under the Apache Software License, Version 2.0
+
+[![Build Status](https://travis-ci.org/raphw/guava-cache-overflow-extension.png)](https://travis-ci.org/raphw/guava-cache-overflow-extension)
